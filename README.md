@@ -23,7 +23,7 @@ wandb
 This repo uses `torch.distributed.launch` for pretraining:
 
 ```bash
-python -m torch.distributed.launch --nproc_per_node=4--nnodes=32 --node_rank=0 --master_addr="" --master_port=12345 r2o_main.py {CONFIG_FILENAME}
+python -m torch.distributed.launch --nproc_per_node=4--nnodes=32 --node_rank=0 --master_addr="" --master_port=12345 detconb_main.py {CONFIG_FILENAME}
 ```
 
 ## Dataset Structure
@@ -45,7 +45,7 @@ imagenet
 
 We release pretrained weights pretrained on ImageNet-1k for 300 epochs in torchvision format.
 
-[Download]() 
+[Download](https://drive.google.com/file/d/15a7jJ1XVmSVZVo0xFE4gDn1Uw2Mns9Ui/view?usp=sharing) 
 
 The evaluation baselines are as follows
 
