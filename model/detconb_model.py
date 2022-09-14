@@ -2,7 +2,6 @@
 import torch
 from .basic_modules import EncoderwithProjection, Predictor
 from utils.mask_utils import convert_binary_mask
-from utils.visualize_masks import wandb_set
 
 class DetconBModel(torch.nn.Module):
     def __init__(self, config):
@@ -33,25 +32,19 @@ class DetconBModel(torch.nn.Module):
         for param_q, param_k in zip(self.online_network.parameters(), self.target_network.parameters()):
             param_k.data.mul_(mm).add_(1. - mm, param_q.data)
 
-    def forward(self, view1, view2, mm, masks, wandb_id):
+    def forward(self, view1, view2, mm, masks):
         # online network forward
         #import ipdb;ipdb.set_trace()
         
         masks = torch.cat([ masks[:,i,:,:,:] for i in range(masks.shape[1])])
-        
-        if wandb_id!=None:  
-            wandb_set(view1[wandb_id].permute(1,2,0).detach().cpu().numpy(),
-                      view2[wandb_id].permute(1,2,0).detach().cpu().numpy(),'views')
-            wandb_set(masks[wandb_id].squeeze().detach().cpu().numpy(),
-                      masks[wandb_id+self.train_batch_size].squeeze().detach().cpu().numpy(),'fh_masks')
             
         masks = convert_binary_mask(masks,pool_size = self.pool_size)
-        q,pinds = self.predictor(*self.online_network(torch.cat([view1, view2], dim=0),masks,wandb_id,'online'))
+        q,pinds = self.predictor(*self.online_network(torch.cat([view1, view2], dim=0),masks,'online'))
 
         # target network forward
         with torch.no_grad():
             self._update_target_network(mm)
-            target_z, tinds = self.target_network(torch.cat([view1, view2], dim=0),masks,wandb_id,'target')
+            target_z, tinds = self.target_network(torch.cat([view1, view2], dim=0),masks,'target')
             target_z = target_z.detach().clone()
 
         return q, target_z, pinds, tinds

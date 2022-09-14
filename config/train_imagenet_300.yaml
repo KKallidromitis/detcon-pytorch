@@ -19,7 +19,8 @@ amp:
   opt_level: "O0"
 
 data:
-  image_dir: "/home/kkallidromitis/data/imagenet" #TODO: Change to match Japan Cluster
+  image_dir: "/path/to/imagenet/" #TODO: Change to match Japan Cluster
+  subset: ""
   mask_type: "fh"
   resize_size: 224 # src: 3.1
   data_workers: 16
@@ -53,7 +54,7 @@ log:
   log_step: 10
   log_dir:
   log_all: False
-  wandb_id: None # int or 'random' or None
+  enable_wandb: True
 
 stage: "train"
 distributed: true

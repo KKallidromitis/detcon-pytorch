@@ -5,7 +5,6 @@ import torch.nn as nn
 from torchvision import models
 from utils.mask_utils import sample_masks
 import torch.nn.functional as F
-from utils.visualize_masks import wandb_sample
 
 class MLP(nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim,mask_roi=16):
@@ -145,7 +144,7 @@ class EncoderwithProjection(nn.Module):
         output_dim = config['model']['projection']['output_dim']
         self.projetion = MLP(input_dim=input_dim, hidden_dim=hidden_dim, output_dim=output_dim,mask_roi=self.mask_rois)        
         
-    def forward(self, x, masks,wandb_id=None,net_type=None):
+    def forward(self, x, masks,net_type=None):
         #import ipdb;ipdb.set_trace()
         if self.pool_size==7:
             x = self.encoder(x) #(B, 2048, pool_size, pool_size)
@@ -161,17 +160,6 @@ class EncoderwithProjection(nn.Module):
             x = self.fpn(x,c2_out,c3_out,c4_out)
             
         masks,mask_ids = sample_masks(masks,self.mask_rois)
-
-        if wandb_id!=None:
-            wandb_sample(torch.reshape(masks[wandb_id],(self.mask_rois,self.pool_size,self.pool_size)).detach().cpu().numpy(),
-                         torch.reshape(masks[wandb_id+self.train_batch_size],
-                                       (self.mask_rois,self.pool_size,self.pool_size)).detach().cpu().numpy(),'sample_masks_'+net_type)
-            
-        if wandb_id!=None:
-            wandb_sample(torch.reshape(masks[wandb_id],(self.mask_rois,self.pool_size,self.pool_size)).detach().cpu().numpy(),
-                 torch.reshape(masks[wandb_id+self.train_batch_size],
-                               (self.mask_rois,self.pool_size,self.pool_size)).detach().cpu().numpy(),'masknet_masks_'+net_type)
-        
         
         # Detcon mask multiply
         bs, emb, emb_x, emb_y  = x.shape

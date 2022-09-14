@@ -1,0 +1,11 @@
+joblib
+scikit-image
+matplotlib
+opencv-python
+tqdm
+tensorflow
+pyyaml
+tensorboardx
+wandb
+pycocotools
+classy_vision

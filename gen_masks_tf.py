@@ -10,12 +10,30 @@ import logging
 from torchvision import datasets
 import matplotlib.image as mpimg
 import cv2 #For binanry mask edge detection
-import argparse
 from tqdm import tqdm
 
 from torchvision.datasets import VisionDataset
 from torchvision.datasets.folder import make_dataset,IMG_EXTENSIONS
 import tensorflow.compat.v1 as tf
+
+import argparse
+
+parser = argparse.ArgumentParser(description='Detcon-Mask Generation')
+
+parser.add_argument("--dataset_dir", metavar="Dataset Direcotry", type=str, default="/path/to/imagenet/images/train", 
+                    help="Dataset directory location, use dataset/train, dataset/val, dataset/test.")
+
+parser.add_argument("--output_dir", metavar="Output Directory", default="/path/to/imagenet/masks/", 
+                    help="Output location of masks.")
+
+parser.add_argument("--mask_type", metavar="Mask Type", default="fh", 
+                    help="Type of mask, select from: fh, patch, ground.")
+
+parser.add_argument("--experiment_name", metavar="Experiment Name", default="train_tf", 
+                    help="Name of experiment, determines output filename.")
+
+parser.add_argument("--ground_mask_dir", metavar="Ground Mask Directory", default="", 
+                    help="Directory to load ground truth mask for testing.")
 
 class ImageCoder(object):
   """Helper class that provides TensorFlow image coding utilities."""
@@ -234,10 +252,6 @@ class Preload_Masks():
         return 
     
 if __name__=="__main__":
-    
-    mask_loader = Preload_Masks(dataset_dir = '/home/kkallidromitis/data/imagenet/images/train',
-                            output_dir = '/home/kkallidromitis/data/imagenet/masks/',
-                            mask_type = 'fh',
-                            experiment_name = 'train_tf',
-                            )
+    args = vars(parser.parse_args())
+    mask_loader = Preload_Masks(**args)
     mask_loader.forward()

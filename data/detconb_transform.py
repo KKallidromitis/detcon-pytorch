@@ -7,7 +7,6 @@ import numpy as np
 import pickle
 from torchvision.datasets import VisionDataset
 from torchvision.datasets.folder import default_loader,make_dataset,IMG_EXTENSIONS
-from pycocotools.coco import COCO
 import os
 
 class MultiViewDataInjector():
@@ -22,7 +21,7 @@ class MultiViewDataInjector():
         return output_cat,mask_cat
 
 class SSLMaskDataset(VisionDataset):
-    def __init__(self, root: str, mask_file: str, extensions = IMG_EXTENSIONS, transform = None):
+    def __init__(self, root: str, mask_file: str, extensions = IMG_EXTENSIONS, transform = None, subset=""):
         self.root = root
         self.transform = transform
         self.loader = default_loader
@@ -75,48 +74,6 @@ class SSLMaskDataset(VisionDataset):
 
     def __len__(self) -> int:
         return len(self.samples)
-
-class COCOMaskDataset(VisionDataset):
-    def __init__(self, root: str,annFile: str, transform = None):
-        self.root = root
-        self.coco = COCO(annFile)
-        self.transform = transform
-        #self.samples = make_dataset(self.root, extensions = extensions) #Pytorch 1.9+
-        self.loader = default_loader
-        ids = []
-        # perform filter 
-        for k in self.coco.imgs.keys():
-            anns = self.coco.loadAnns(self.coco.getAnnIds(k))
-            if len(anns)>0:
-                ids.append(k)
-        self.ids = list(sorted(ids))
-        #self.img_to_mask = self._get_masks(mask_file)
-
-    def _get_masks(self, mask_file):
-        with open(mask_file, "rb") as file:
-            return pickle.load(file)
-        
-    def __getitem__(self, index: int):
-        id = self.ids[index]
-        filename = self.coco.loadImgs(id)[0]["file_name"]
-        path = os.path.join(self.root, filename)
-        # Load Image
-        sample = self.loader(path)
-        anns = self.coco.loadAnns(self.coco.getAnnIds(id))
-        mask = np.max(np.stack([self.coco.annToMask(ann) * ann["category_id"] 
-                                                 for ann in anns]), axis=0)
-
-        # print(np.unique(mask))
-        # return sample,mask
-        # Apply transforms
-        mask = torch.LongTensor(mask)
-        if self.transform is not None:
-            sample,mask = self.transform(sample,mask.unsqueeze(0))
-        return sample,mask
-
-    def __len__(self) -> int:
-        return len(self.ids)
-
 
 class GaussianBlur():
     def __init__(self, kernel_size, sigma_min=0.1, sigma_max=2.0):

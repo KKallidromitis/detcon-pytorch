@@ -10,13 +10,12 @@ import torch.backends.cudnn as cudnn
 
 from tensorboardX import SummaryWriter
 import apex
-import wandb
 from apex.parallel import DistributedDataParallel as DDP
 from apex import amp
 
 from model import DetconBModel
 from optimizer import LARS
-from data import ImageLoader,ImageLoadeCOCO
+from data import ImageLoader
 from utils import distributed_utils, params_util, logging_util, eval_util
 from utils.data_prefetcher import data_prefetcher
 from losses import DetconBInfoNCECriterion
@@ -75,9 +74,14 @@ class DetconBTrainer():
         save_dir = '/'.join(self.ckpt_path.split('/')[:-1])
         self.log_all = self.config['log']['log_all']
         
-        if self.gpu==0 or self.log_all:
-            wandb.init(project="detcon_byol",name = save_dir+'_gpu_'+str(self.rank))
-        
+        """Wandb Log"""
+        self.enable_wandb = self.config['log']['enable_wandb']
+        if self.enable_wandb:
+            import wandb
+            if self.gpu==0 or self.log_all:
+                wandb.init(project="detcon_byol",name = save_dir+'_gpu_'+str(self.rank))
+                
+        """Create new/existing dir"""
         try:
             os.makedirs(save_dir)
         except:
@@ -85,7 +89,6 @@ class DetconBTrainer():
 
         """log tools in the running phase"""
         self.steps = 0
-        self.wandb_id = self.config['log']['wandb_id']
         self.epoch_count = -1
         self.log_step = self.config['log']['log_step']
         self.logging = logging_util.get_std_logging()
@@ -96,11 +99,7 @@ class DetconBTrainer():
         """get data loader"""
         self.stage = self.config['stage']
         assert self.stage == 'train', ValueError(f'Invalid stage: {self.stage}, only "train" for DetconBYOL training')
-        if self.config['data']['mask_type'] == 'coco':
-            print("DEBUG: Using Coco GT Mask")
-            self.data_ins = ImageLoadeCOCO(self.config)
-        else:
-            self.data_ins = ImageLoader(self.config)
+        self.data_ins = ImageLoader(self.config)
         self.train_loader = self.data_ins.get_loader(self.stage, self.train_batch_size)
 
         self.sync_bn = self.config['amp']['sync_bn']
@@ -217,18 +216,10 @@ class DetconBTrainer():
             
             # measure data loading time
             data_time.update(time.time() - end)
-            
-            wandb_id = None
-            if self.gpu==0 and self.epoch_count<epoch:
-                if isinstance(self.wandb_id, int):
-                    wandb_id = int(self.wandb_id)
-                elif self.wandb_id=='random':
-                    wandb_id = torch.randint(0,self.train_batch_size,(1,1)).item()
-                self.epoch_count = epoch     
                 
             # forward
             tflag = time.time()
-            q, target_z,pinds, tinds = self.model(view1, view2, self.mm, masks.to('cuda'),wandb_id)
+            q, target_z,pinds, tinds = self.model(view1, view2, self.mm, masks.to('cuda'))
             forward_time.update(time.time() - tflag)
 
             tflag = time.time()
@@ -256,18 +247,19 @@ class DetconBTrainer():
             #import ipdb;ipdb.set_trace()
             # Print log info
             if (self.gpu == 0 or self.log_all) and self.steps % self.log_step == 0:
-                
-                # Log per batch stats to wandb (average per epoch is also logged at the end of function)
-                wandb.log({
-                    'lr': round(self.optimizer.param_groups[0]["lr"], 5),
-                    'mm': round(self.mm, 5),
-                    'loss': round(loss_meter.val, 5),
-                    'Batch Time': round(batch_time.val, 5),
-                    'Data Time': round(data_time.val, 5),
-                    'Forward Time': round(forward_time.val, 5),
-                    'Backward Time': round(backward_time.val, 5),
-                })
-
+                if self.enable_wandb:
+                    import wandb
+                    # Log per batch stats to wandb (average per epoch is also logged at the end of function)
+                    wandb.log({
+                        'lr': round(self.optimizer.param_groups[0]["lr"], 5),
+                        'mm': round(self.mm, 5),
+                        'loss': round(loss_meter.val, 5),
+                        'Batch Time': round(batch_time.val, 5),
+                        'Data Time': round(data_time.val, 5),
+                        'Forward Time': round(forward_time.val, 5),
+                        'Backward Time': round(backward_time.val, 5),
+                    })
+                        
                 printer(f'Epoch: [{epoch}][{i}/{len(self.train_loader)}]\t'
                         f'Step {self.steps}\t'
                         f'lr {round(self.optimizer.param_groups[0]["lr"], 5)}\t'
@@ -280,13 +272,15 @@ class DetconBTrainer():
                         f'Log Time {log_time.val:.4f} ({log_time.avg:.4f})\t')
 
             images, masks = prefetcher.next()
-        if self.gpu == 0 or self.log_all: 
-            # Log averages at end of Epoch
-            wandb.log({
-                'Average Loss (Per-Epoch)': round(loss_meter.avg, 5),
-                'Average Batch-Time (Per-Epoch)': round(batch_time.avg, 5),
-                'Average Data-Time (Per-Epoch)': round(data_time.avg, 5),
-                'Average Forward-Time (Per-Epoch)': round(forward_time.avg, 5),
-                'Average Backward-Time (Per Epoch)': round(backward_time.avg, 5),
-            })
+            
+        if self.enable_wandb:
+            if self.gpu == 0 or self.log_all: 
+                # Log averages at end of Epoch
+                wandb.log({
+                    'Average Loss (Per-Epoch)': round(loss_meter.avg, 5),
+                    'Average Batch-Time (Per-Epoch)': round(batch_time.avg, 5),
+                    'Average Data-Time (Per-Epoch)': round(data_time.avg, 5),
+                    'Average Forward-Time (Per-Epoch)': round(forward_time.avg, 5),
+                    'Average Backward-Time (Per Epoch)': round(backward_time.avg, 5),
+                })
 

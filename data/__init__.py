@@ -1,1 +1,1 @@
-from .image_loader import ImageLoader,ImageLoadeCOCO
+from .image_loader import ImageLoader
