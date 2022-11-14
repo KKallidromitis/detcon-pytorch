@@ -1,6 +1,6 @@
 # detcon-pytorch
 
-PyTorch implementation of DetconB: Efficient Visual Pretraining with Contrastive Detection.
+PyTorch implementation of the DetconB model from: ["Efficient Visual Pretraining with Contrastive Detection " Henaff et al. (ICCV 2021)](https://arxiv.org/abs/2103.10957)
 
 Installation of [Apex](https://github.com/NVIDIA/apex) is required to enable DDP.
 
@@ -8,11 +8,17 @@ To log metrics to [wandb](https://github.com/wandb/client) switch to `enable_wan
 
 ## Pretrained Weights
 
-We release pretrained weights pretrained on ImageNet-1k for 300 epochs in torchvision format.
+We release the pretrained detcon weights on ImageNet-1k for 300 epochs in original, torchvision and d2 format.
 
-[Download](https://drive.google.com/file/d/15a7jJ1XVmSVZVo0xFE4gDn1Uw2Mns9Ui/view?usp=sharing) 
+**Original** [[Download](https://drive.google.com/file/d/15a7jJ1XVmSVZVo0xFE4gDn1Uw2Mns9Ui/view?usp=share_link)]
 
-The evaluation baselines are as follows
+Converted: **Torchvision** (MMSegmentation) [[Download](https://drive.google.com/file/d/1izUBGYX_3PkaurhP3bRK1EVhXKjOc5ep/view?usp=sharing)] **D2** (Detectron2) [[Download](https://drive.google.com/file/d/15a7jJ1XVmSVZVo0xFE4gDn1Uw2Mns9Ui/view?usp=share_link)]
+
+
+For the detcon weights conversion we used initially [convert_fcn.py](https://github.com/KKallidromitis/detcon-pytorch/blob/main/utils/convert_fcn.py) for torchvision and then the official Detectron2 [convert-torchvision-to-d2.py](https://github.com/facebookresearch/detectron2/blob/main/tools/convert-torchvision-to-d2.py) for d2 format.
+
+
+The evaluation baselines are as follows:
 
 |         Metric         | Value  |
 |------------------|---|
