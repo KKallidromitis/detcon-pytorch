@@ -28,12 +28,12 @@ The evaluation baselines are as follows:
 |    MS COCO $\text{AP}^{\text{mk}}$ |  38.3 |
 
 ## Requirements
+Before installing requirements.txt ensure the environment is updated with the correct [PyTorch](https://pytorch.org/) and Torchvision release
 
 ```
 python>=3.9
 pytorch>=1.10.0
 torchvision>=0.11.0
--------------------included in requirements.txt
 joblib
 scikit-image
 matplotlib
