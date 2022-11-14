@@ -18,7 +18,7 @@ For the detcon weights conversion we used initially [convert_fcn.py](https://git
 
 <img src="https://github.com/KKallidromitis/detcon-pytorch/blob/main/detcon_graphic.PNG" width="700">
 
-The evaluation baselines are as follows:
+The reproduced evaluation baselines (after 300 epochs of pretraining) are as follows:
 
 |         Metric         | Value  |
 |------------------|---|
@@ -81,4 +81,4 @@ We use [MMSegmentation](https://github.com/open-mmlab/mmsegmentation) for PASCAL
 
 ## Acknowledgement
 
-This repo is based on the BYOL implementation from Yao: https://github.com/yaox12/BYOL-PyTorch and K-Means implementation from Ali Hassani https://github.com/alihassanijr/TorchKMeans
+This repo is based on the BYOL implementation from Yao: https://github.com/yaox12/BYOL-PyTorch.
