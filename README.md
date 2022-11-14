@@ -33,6 +33,7 @@ The evaluation baselines are as follows:
 python>=3.9
 pytorch>=1.10.0
 torchvision>=0.11.0
+-------------------included in requirements.txt
 joblib
 scikit-image
 matplotlib
