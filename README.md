@@ -8,11 +8,7 @@ To log metrics to [wandb](https://github.com/wandb/client) switch to `enable_wan
 
 ## Pretrained Weights
 
-We release the pretrained detcon weights on ImageNet-1k for 300 epochs in original, torchvision and d2 format.
-
-**Original** [[Download](https://drive.google.com/file/d/15a7jJ1XVmSVZVo0xFE4gDn1Uw2Mns9Ui/view?usp=share_link)]
-
-Converted: **Torchvision** (MMSegmentation) [[Download](https://drive.google.com/file/d/1izUBGYX_3PkaurhP3bRK1EVhXKjOc5ep/view?usp=sharing)] **D2** (Detectron2) [[Download](https://drive.google.com/file/d/15a7jJ1XVmSVZVo0xFE4gDn1Uw2Mns9Ui/view?usp=share_link)]
+We release the pretrained detcon weights on ImageNet-1k for 300 epochs in original, torchvision and d2 format. [Hugging Face](https://huggingface.co/KonstantinosKK/detcon-pytorch)
 
 For the detcon weights conversion we used initially [convert_fcn.py](https://github.com/KKallidromitis/detcon-pytorch/blob/main/utils/convert_fcn.py) for torchvision and then the official Detectron2 [convert-torchvision-to-d2.py](https://github.com/facebookresearch/detectron2/blob/main/tools/convert-torchvision-to-d2.py) for d2 format.
 
